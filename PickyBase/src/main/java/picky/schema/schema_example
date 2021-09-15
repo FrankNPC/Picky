@@ -1,0 +1,60 @@
+
+product{
+  id: autoincrement(long),
+    amount: double,
+    status: atomic(byte),
+    name: string,
+    description: string,
+    tags: [{tag: string}],
+    sku: [{
+      id: autoincrement(long),
+        name: string,
+        quantity: lock(int),
+        price: float,
+      active: atomic(boolean),
+    }],
+    primarykey(id,1000,100000),
+}
+product.sku.id
+
+1234567
+323213.3213d
+1
+name111
+tag1,tag2
+ 
+ 321
+ sub_name1
+ 22
+ 32.22
+ 1
+ 
+description111
+
+
+
+account{
+    id: autoincrement(long),
+  login_name: string,
+  head_slogon: byte,
+    status: byte,
+    password: string,
+    session_id: string,
+    primarykey(id,1000,100000),
+    uniquekey(session_id,1000,100000),
+  partitionkey(login_name, 100, 10000),
+}
+
+order{
+  id: autoincrement(long),
+  status: byte,
+  total: atomic(double),
+  sub_order: {
+    id: autoincrese(long,1),
+    product_id: long,
+    amount: double,
+  },
+  external_order_id: string(40),
+  uniquekey(external_order_id, "3232", "323333"),
+  primarykey(id, "abc", "ABC"),
+}

@@ -1,0 +1,14 @@
+name: agent_1
+role: agent
+token: xxxxxxxxxxxx
+port: 8964
+sync_host: 127.0.0.1:8964
+sharding_agent_available: 1000
+sharding_agent_percentage: 10
+sharding_storage_available: 1000
+sharding_storage_percentage: 10
+command_timeout:10000
+board_host: 127.0.0.1:8964
+compress: false
+data_folder: ./data/
+file_read_cache_size: 1024
