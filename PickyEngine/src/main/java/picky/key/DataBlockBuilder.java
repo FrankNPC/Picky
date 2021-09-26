@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.stream.Collectors;
 
-import picky.common.ByteArrays;
+import picky.common.CompareUtil;
 import picky.io.LocalStorage;
 import picky.schema.Field;
 import picky.schema.FieldType;
@@ -315,7 +315,7 @@ public final class DataBlockBuilder {
 			return new DataBlock<byte[]>() {
 				private volatile byte[] data = originals==null?new byte[0]:originals;
 				private volatile int length = data.length;
-				private PriorityQueue<byte[]> priorityQueue = new PriorityQueue<>((x,y)-> -ByteArrays.compareTo(x, 0, x.length, y, 0, y.length));
+				private PriorityQueue<byte[]> priorityQueue = new PriorityQueue<>((x,y)-> -CompareUtil.compareTo(x, 0, x.length, y, 0, y.length));
 
 				@Override
 				public void flush() {
@@ -357,7 +357,7 @@ public final class DataBlockBuilder {
 					while(low<=high) {
 						m = (low+high)>>1;
 						n=data[m];n<<=8;n|=data[m+1];
-						cmp = ByteArrays.compareTo(data, m+2, n+m+2, value, 0, value.length);
+						cmp = CompareUtil.compareTo(data, m+2, n+m+2, value, 0, value.length);
 						if (cmp==0) {return m;}
 						if (cmp<0) {
 							low=m+1;
@@ -392,7 +392,7 @@ public final class DataBlockBuilder {
 						for(int i=indices.size()-1,idx=0,cmp=0,m=0,s=size-1; i>-1&&s>-1&&bytes!=null;) {
 							idx = indices.get(i);
 							m= data[idx];m<<=8;m|=data[idx+1];
-							cmp = ByteArrays.compareTo(data, idx+2, idx+2+m, bytes, 2, bytes.length);
+							cmp = CompareUtil.compareTo(data, idx+2, idx+2+m, bytes, 2, bytes.length);
 							s-=m;
 							if (cmp>=0) {
 								System.arraycopy( data, idx, data, s-2, m+2);

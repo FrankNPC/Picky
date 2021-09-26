@@ -8,8 +8,9 @@ import picky.executor.terminal.TernimalExecutor;
 public final class ExecutorBuilder {
 	
 	private static ExecutorBuilder executorBuilder = new ExecutorBuilder();
-
+	private static Configuration configuration;
 	public static ExecutorBuilder getInstance() {
+		configuration = Configuration.getConfiguration();
 		return executorBuilder;
 	}
 
@@ -20,7 +21,7 @@ public final class ExecutorBuilder {
 			return executor;
 		}
 		
-		switch(Configuration.getConfiguration().getRole()) {
+		switch(configuration.getRole()) {
 		case Agent :
 //		case AgentReadOnly :
 			return AgentExecutor.getInstance();

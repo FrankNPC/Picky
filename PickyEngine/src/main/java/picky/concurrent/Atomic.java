@@ -4,10 +4,10 @@ public interface Atomic<T> {
 
 	public T get();
 
-	public T set(T value);
+	public void set(T value);
 
 	public T getAndSet(T value);
 
-	public T compareAndSet(T value, T newValue);
+	public boolean compareAndSet(T value, T newValue);
 	
 }

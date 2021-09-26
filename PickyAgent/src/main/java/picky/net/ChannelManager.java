@@ -38,10 +38,10 @@ public final class ChannelManager {
 				try {
 					commandSerializer = (CommandSerializer) PickyClassManager.getInstance().getCommandSerializer()
 							.newInstance();
+					executor = ExecutorBuilder.getInstance().getExecutor();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				executor = ExecutorBuilder.getInstance().getExecutor();
 			}
 		}
 		return channelManager;

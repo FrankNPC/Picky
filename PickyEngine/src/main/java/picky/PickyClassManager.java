@@ -1,6 +1,5 @@
 package picky;
 
-import picky.node.DefaultShardingComparator;
 import picky.serializer.DefaultCommandSerializer;
 import picky.serializer.DefaultPrimaryKeyBlockSerializer;
 import picky.serializer.DefaultSchemaSerializer;
@@ -27,8 +26,6 @@ public class PickyClassManager {
 	private Class<?> valueSerializer = DefaultValueSerializer.class;
 
 	private Class<?> shardingSerializer = DefaultShardingSerializer.class;
-
-	private Class<?> ShardingComparator = DefaultShardingComparator.class;
 
 	private Class<?> primaryKeyBlockSerializer = DefaultPrimaryKeyBlockSerializer.class;
 	
@@ -88,14 +85,6 @@ public class PickyClassManager {
 
 	public void setShardingSerializer(Class<?> shardingSerializer) {
 		this.shardingSerializer = shardingSerializer;
-	}
-
-	public Class<?> getShardingComparator() {
-		return ShardingComparator;
-	}
-
-	public void setShardingComparator(Class<?> shardingComparator) {
-		ShardingComparator = shardingComparator;
 	}
 
 	public Class<?> getPrimaryKeyBlockSerializer() {

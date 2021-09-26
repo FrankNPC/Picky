@@ -27,7 +27,7 @@ public class PickyServer {
 		bootstrap = new ServerBootstrap();
 	}
 	
-	public PickyServer start() throws InterruptedException { 
+	public PickyServer start() throws InterruptedException {
 		bootstrap.group(boosGroup, workGroup)
 				.channel(NioServerSocketChannel.class)
 				.option(ChannelOption.SO_BACKLOG,1024)

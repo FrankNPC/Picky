@@ -12,8 +12,8 @@ public final class DefaultShardingSerializer implements ShardingSerializer {
 		StringBuilder buffer = new StringBuilder();
 		for(Sharding<?> sharding : shardings) {
 			buffer.append("{\n");
-			buffer.append("HostName:\"");
-			buffer.append(sharding.getHostName());
+			buffer.append("AppName:\"");
+			buffer.append(sharding.getAppName());
 			buffer.append("\",");
 			buffer.append("SchemaName:\"");
 			buffer.append(sharding.getSchemaName());

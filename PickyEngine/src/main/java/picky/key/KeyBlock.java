@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import picky.common.ByteArrays;
+import picky.common.CompareUtil;
 import picky.schema.Field;
 import picky.schema.FieldType;
 import picky.schema.Key;
@@ -26,7 +26,7 @@ public class KeyBlock<T> {
 	private long lastAccessTime;
 	
 	private long lastModifiedTime;
-	
+
 	private long occupiedSize;
 	
 	private Comparator<Object> comparator;
@@ -60,12 +60,16 @@ public class KeyBlock<T> {
 		case Bytes:
 			comparator = (x,y)->{
 				byte[] b1 = (byte[]) x; byte[] b2 = (byte[]) y;
-				return ByteArrays.compareTo(b1, 0, b1.length, b2, 0, b2.length);};
+				return CompareUtil.compareTo(b1, 0, b1.length, b2, 0, b2.length);};
 				break;
-		case Boolean:
 		case Byte:
+			comparator = (x,y)->{return Byte.compare((Byte)x, (Byte)y);};break;
 		case Float:
+			comparator = (x,y)->{return Float.compare((Float)x, (Float)y);};break;
 		case Double:
+			comparator = (x,y)->{return Double.compare((Double)x, (Double)y);};break;
+		case Boolean:
+			comparator = (x,y)->{return Boolean.compare((Boolean)x, (Boolean)y);};break;
 			default:break;
 		}
 	}

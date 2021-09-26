@@ -3,9 +3,11 @@ package picky.concurrent;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class AtomicBase62 implements java.io.Serializable {
+import picky.common.Base62;
 
-	private static final long serialVersionUID = 9157429181629273352L;
+public class AtomicBase62 implements java.io.Serializable, AutoIncrement<String> {
+
+	private static final long serialVersionUID = 1157429181629273352L;
 
 	private Lock lock = new ReentrantLock(false);
 
@@ -14,106 +16,121 @@ public class AtomicBase62 implements java.io.Serializable {
 	public AtomicBase62(String initialValue) {
 		buffer.append(initialValue);
 	}
-
+	
 	public AtomicBase62() {
-		buffer.append('0');
+		buffer.append(Base62.Codec[0]);
 	}
 
+	@Override
 	public final String get() {
 		lock.lock();
 		try {
 		return buffer.toString();
 		} finally { lock.unlock(); }
 	}
-
-	public final void set(String newValue) throws Exception {
-//		if (!newValue.matches("~[0-9a-zA-Z]+$")) { throw new Exception("invalid base62 value:"+newValue);}
+	@Override
+	public final void set(String newValue) {
 		lock.lock();
 		try {
-			buffer.delete(0, buffer.length());
-			buffer.append(newValue==null?'0':newValue);
+			buffer = new StringBuilder(newValue);
 		} finally { lock.unlock(); }
 	}
-
-	public final String getAndSet(String newValue) throws Exception {
+	@Override
+	public final String getAndSet(String newValue) {
 		lock.lock();
 		try {
 			String str = get();
-			set(newValue);
+			buffer = new StringBuilder(newValue);
 			return str;
 		} finally { lock.unlock(); }
 	}
-
-	public final boolean compareAndSet(String expect, String update) throws Exception {
+	@Override
+	public final boolean compareAndSet(String expect, String update) {
 		lock.lock();
 		try {
-			if (get().equals(expect)) {
-				set(update);
-				return true;
+			if (buffer.length()!=expect.length()) {return false;}
+			for(int i=0; i<buffer.length(); i++) {
+				if (buffer.charAt(i)!=expect.charAt(i)) {return false;}
 			}
+			buffer = new StringBuilder(update);
 		} finally { lock.unlock(); }
-		return false;
+		return true;
 	}
-	
-//	private static final char[] Hex62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKMNOPQRSTUVWXYZ".toCharArray();
-	private final void increment(int delta) throws Exception {
+//	private final void increment(int delta) {
+//			int last = buffer.length()-1;
+//			if (last<0) {
+//				buffer.append(Base62.Codec[0]);
+//			}
+//			int code = Base62.Codec[buffer.charAt(last)]+delta;
+//	}
+	@Override
+	public final void increment(String delta) {
 		lock.lock();
 		try {
-			//************************
-			
-			
 			
 		} finally { lock.unlock(); }
 	}
-
-	public final String getAndIncrement() throws Exception {
+	@Override
+	public final String getAndIncrement() {
 		lock.lock();
 		try {
-			String str = get();
+			String str = buffer.toString();
 			increment(1);
 			return str;
 		} finally { lock.unlock(); }
 	}
-
-	public final String incrementAndGet() throws Exception {
+	@Override
+	public final String incrementAndGet() {
 		lock.lock();
 		try {
 			increment(1);
-			return get();
+			return buffer.toString();
 		} finally { lock.unlock(); }
 	}
-
-	public final String getAndDecrement() throws Exception {
+	@Override
+	public final String getAndDecrement() {
 		lock.lock();
 		try {
-			String str = get();
-			increment(-1);
+			String str = buffer.toString();
+			decrement(1);
 			return str;
 		} finally { lock.unlock(); }
 	}
-
-	public final String decrementAndGet() throws Exception {
+	@Override
+	public final String decrementAndGet() {
 		lock.lock();
 		try {
-			increment(-1);
-			return get();
+			decrement(1);
+			return buffer.toString();
 		} finally { lock.unlock(); }
 	}
-	public final String getAndAdd(int delta) throws Exception {
+	public final String getAndAdd(int delta) {
 		lock.lock();
 		try {
-			String str = get();
+			String str = buffer.toString();
 			increment(delta);
 			return str;
 		} finally { lock.unlock(); }
 	}
 
-	public final String addAndGet(int delta) throws Exception {
+	public final String addAndGet(int delta) {
 		lock.lock();
 		try {
 			increment(delta);
-			return get();
+			return buffer.toString();
 		} finally { lock.unlock(); }
+	}
+
+	@Override
+	public void increment(int value) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void decrement(int value) {
+		// TODO Auto-generated method stub
+		
 	}
 
 
@@ -143,9 +160,26 @@ public class AtomicBase62 implements java.io.Serializable {
 //		return get();
 //	}
 
+	@Override
+	public final void decrement(String value) {
+		// TODO Auto-generated method stub
+	}
+
+
+	@Override
+	public final String getAndAdd(String value) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public final String addAndGet(String value) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	public String toString() {
 		return get();
 	}
-
 }
 

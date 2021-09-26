@@ -46,8 +46,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>picky.base</groupId>
-			<artifactId>picky-base</artifactId>
+			<groupId>picky.engine</groupId>
+			<artifactId>picky-engine</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		

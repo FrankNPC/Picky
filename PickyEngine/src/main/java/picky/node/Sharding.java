@@ -10,14 +10,21 @@ public class Sharding<T> {
 	
 	private KeyBlock<T> keyBlock;
 	private Role role;
-	private String hostName;
+	private String appName;
 	private String schemaName;
-	
-	public String getHostName() {
-		return hostName;
+	private boolean current;
+
+	public String getAppName() {
+		return appName;
 	}
-	public void setHostName(String hostName) {
-		this.hostName = hostName;
+	public void setAppName(String appName) {
+		this.appName = appName;
+	}
+	public boolean getCurrent() {
+		return current;
+	}
+	public void setCurrent(boolean current) {
+		this.current = current;
 	}
 	public Role getRole() {
 		return role;
@@ -42,7 +49,7 @@ public class Sharding<T> {
 	public int hashCode() {
 		int hash = 31;
 		if (role!=null) {hash^=role.hashCode();}
-		if (hostName!=null) {hash^=hostName.hashCode();}
+		if (appName!=null) {hash^=appName.hashCode();}
 		if (schemaName!=null) {hash^=schemaName.hashCode();}
 		if (keyBlock!=null) {hash^=keyBlock.hashCode();}
 		return hash;
@@ -57,14 +64,13 @@ public class Sharding<T> {
 		Sharding<T> sharding = (Sharding<T>) obj;
 		if (keyBlock==null^sharding.keyBlock==null) {return false;}
 		if (role==null^sharding.role==null) {return false;}
-		if (hostName==null^sharding.hostName==null) {return false;}
+		if (appName==null^sharding.appName==null) {return false;}
 		if (schemaName==null^sharding.schemaName==null) {return false;}
 
 		if (keyBlock!=null&&sharding.keyBlock!=null&&!keyBlock.equals(sharding.keyBlock)) {return false;}
 		if (role!=null&&sharding.role!=null&&!role.equals(sharding.role)) {return false;}
-		if (hostName!=null&&sharding.hostName!=null&&!hostName.equals(sharding.hostName)) {return false;}
+		if (appName!=null&&sharding.appName!=null&&!appName.equals(sharding.appName)) {return false;}
 		if (schemaName!=null&&sharding.schemaName!=null&&!schemaName.equals(sharding.schemaName)) {return false;}
 		return true;
 	}
-	
 }

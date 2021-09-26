@@ -5,12 +5,12 @@ import java.util.Random;
 
 public class Base62 {
 
-	private static char[] Base62Code = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray();
+	public static char[] Codec = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray();
 
-	private static byte[] decodes = new byte[256];
+	public static byte[] CodecIndices = new byte[256];
 	static {
-		for (int i = 0; i < Base62Code.length; i++) {
-			decodes[Base62Code[i]] = (byte) i;
+		for (int i = 0; i < Codec.length; i++) {
+			CodecIndices[Codec[i]] = (byte) i;
 		}
 	}
 
@@ -19,8 +19,8 @@ public class Base62 {
 		for(long number : numbers) {
 			if (number<0) {number=-number;}
 			while(number>0&&buffer.length()<fixLength) {
-				buffer.append(Base62Code[(int) (number%Base62Code.length)]);
-				number/=Base62Code.length;
+				buffer.append(Codec[(int) (number%Codec.length)]);
+				number/=Codec.length;
 			}
 		};
 		Random random = new Random();
@@ -28,8 +28,8 @@ public class Base62 {
 			long number = random.nextLong();
 			if (number<0) {number+=Long.MAX_VALUE;}
 			while(number>0&&buffer.length()<fixLength) {
-				buffer.append(Base62Code[(int) (number%Base62Code.length)]);
-				number/=Base62Code.length;
+				buffer.append(Codec[(int) (number%Codec.length)]);
+				number/=Codec.length;
 			}
 		}
 		return buffer.toString();
@@ -42,7 +42,7 @@ public class Base62 {
 			val = (val << 8) | (data[i] & 0xFF);
 			pos += 8;
 			while (pos > 5) {
-				char c = Base62Code[val >> (pos -= 6)];
+				char c = Codec[val >> (pos -= 6)];
 				sb.append(
 					c == 'i' ? "ia" :
 					c == '+' ? "ib" :
@@ -52,7 +52,7 @@ public class Base62 {
 			}
 		}
 		if (pos > 0) {
-			char c = Base62Code[val << (6 - pos)];
+			char c = Codec[val << (6 - pos)];
 			sb.append(
 				c == 'i' ? "ia" :
 				c == '+' ? "ib" :
@@ -78,7 +78,7 @@ public class Base62 {
 					c == 'b' ? '+' :
 					c == 'c' ? '/' : data[--i];
 			}
-			val = (val << 6) | decodes[c];
+			val = (val << 6) | CodecIndices[c];
 			pos += 6;
 			while (pos > 7) {
 				baos.write(val >> (pos -= 8));
