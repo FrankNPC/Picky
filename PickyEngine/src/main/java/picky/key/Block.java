@@ -3,6 +3,8 @@ package picky.key;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import picky.key.block.DataBlock;
+import picky.key.block.DataBlockBuilder;
 import picky.schema.Key;
 
 /**
@@ -19,22 +21,25 @@ public class Block<T> {
 	
 	private long lastModifiedTime;
 
-	private Key<T> key;
+	private int resetTime;
 	
-	public Block(String path, Key<T> k) {
+	private int accessCount;
+
+	private Key<?> key;
+	
+	public Block(String path, Key<?> k) {
 		this.absolutePath = path+Block_File_EXT;
 		this.key = new Key<>(k);
-		this.key.setMinValue(null);
-		this.key.setMaxValue(null);
-		this.key.setName(absolutePath);
+//		this.key.setMinValue(null);
+//		this.key.setMaxValue(null);
 		getDataBlock();
 	}
 	
-	public void finalize() {
-		getDataBlock().flush();
+	public void flush() {
+		dataBlock.flush();
 	}
 	
-	public Key<T> getKey(){
+	public Key<?> getKey(){
 		return this.key;
 	}
 	
@@ -52,9 +57,10 @@ public class Block<T> {
 	public boolean addKeyIfAbsent(T value) {
 		lock.lock();
 		try {
+			accessCount++;
 			lastAccessTime = System.currentTimeMillis();
-			if (getDataBlock().addKeyIfAbsent(value)) {
-				lastModifiedTime = System.currentTimeMillis();
+			if (dataBlock.addKeyIfAbsent(value)) {
+				lastModifiedTime = lastAccessTime;
 				return true;
 			}
 		}finally {
@@ -65,9 +71,10 @@ public class Block<T> {
 	public boolean addKey(T value) {
 		lock.lock();
 		try {
+			accessCount++;
 			lastAccessTime = System.currentTimeMillis();
-			if (getDataBlock().addKey(value)) {
-				lastModifiedTime = System.currentTimeMillis();
+			if (dataBlock.addKey(value)) {
+				lastModifiedTime = lastAccessTime;
 				return true;
 			}
 		}finally {
@@ -78,9 +85,10 @@ public class Block<T> {
 	public boolean removeKey(T value) {
 		lock.lock();
 		try {
+			accessCount++;
 			lastAccessTime = System.currentTimeMillis();
-			if (getDataBlock().removeKey(value)) {
-				lastModifiedTime = System.currentTimeMillis();
+			if (dataBlock.removeKey(value)) {
+				lastModifiedTime = lastAccessTime;
 				return true;
 			}
 		}finally {
@@ -91,8 +99,19 @@ public class Block<T> {
 	public int indexOf(T value) {
 		lock.lock();
 		try {
+			accessCount++;
 			lastAccessTime = System.currentTimeMillis();
-			return getDataBlock().indexOf(value);
+			return dataBlock.indexOf(value);
+		}finally {
+			lock.unlock();
+		}
+	}
+	public boolean containKey(T value) {
+		lock.lock();
+		try {
+			accessCount++;
+			lastAccessTime = System.currentTimeMillis();
+			return dataBlock.containKey(value);
 		}finally {
 			lock.unlock();
 		}
@@ -108,6 +127,14 @@ public class Block<T> {
 
 	public long getOccupiedSize() {
 		return dataBlock.length();
+	}
+
+	public int getResetTime() {
+		return resetTime;
+	}
+
+	public int getAccessCount() {
+		return accessCount;
 	}
 
 }

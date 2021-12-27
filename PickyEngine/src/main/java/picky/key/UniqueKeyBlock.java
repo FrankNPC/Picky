@@ -7,6 +7,7 @@ import picky.schema.Key;
 import picky.schema.Schema;
 
 /**
+ * primary key map to unique key or map back
  * @author FrankNPC
  *
  */

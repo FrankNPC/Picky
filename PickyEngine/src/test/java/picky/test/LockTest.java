@@ -6,8 +6,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.junit.Test;
 
+import junit.framework.TestCase;
+
 @SuppressWarnings("static-access")
-public class LockTest {
+public class LockTest{
 
 	Lock lock = new ReentrantReadWriteLock().writeLock();
 	public void run1() {
@@ -55,7 +57,7 @@ public class LockTest {
 //		new Thread(this::run1).start();
 //		new Thread(this::run2).start();
 		try {
-			Thread.currentThread().sleep(100000);
+			Thread.currentThread().sleep(3000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -7,7 +7,7 @@ package picky.schema;
  */
 public class SchemaBase{
 
-	private String[] fieldsOrder;
+//	private String[] fieldsOrder;
 	
 	private String name;
 
@@ -31,13 +31,13 @@ public class SchemaBase{
 		this.fields = fields;
 	}
 
-	public String[] getFieldsOrder() {
-		return fieldsOrder;
-	}
-
-	public void setFieldsOrder(String[] fieldsOrder) {
-		this.fieldsOrder = fieldsOrder;
-	}
+//	public String[] getFieldsOrder() {
+//		return fieldsOrder;
+//	}
+//
+//	public void setFieldsOrder(String[] fieldsOrder) {
+//		this.fieldsOrder = fieldsOrder;
+//	}
 
 	public SchemaBase[] getSchemaBases() {
 		return schemaBases;
@@ -51,7 +51,7 @@ public class SchemaBase{
 	public int hashCode() {
 		int hash = 31;
 		if (name!=null) {hash^=name.hashCode();}
-		for(String s : fieldsOrder) {hash^=s.hashCode();}
+//		for(String s : fieldsOrder) {hash^=s.hashCode();}
 		for(Field f : fields) {hash^=f.hashCode();}
 		for(SchemaBase s : schemaBases) {hash^=s.hashCode();}
 		return hash;
@@ -65,18 +65,18 @@ public class SchemaBase{
 		SchemaBase schemaBase = (SchemaBase) obj;
 
 		if (name==null^schemaBase.name==null) {return false;}
-		if (fieldsOrder==null^schemaBase.fieldsOrder==null) {return false;}
+//		if (fieldsOrder==null^schemaBase.fieldsOrder==null) {return false;}
 		if (fields==null^schemaBase.fields==null) {return false;}
 		if (schemaBases==null^schemaBase.schemaBases==null) {return false;}
 
 		if (name!=null&&schemaBase.name!=null&&!name.equals(schemaBase.name)) {return false;}
 		
-		if (fieldsOrder!=null&&schemaBase.fieldsOrder!=null) {
-			if (fieldsOrder.length!=schemaBase.fieldsOrder.length) {return false;}
-			for(int i=0; i<fieldsOrder.length; i++) {
-				if (!fieldsOrder[i].equals(schemaBase.fieldsOrder[i])) {return false;}
-			}
-		}
+//		if (fieldsOrder!=null&&schemaBase.fieldsOrder!=null) {
+//			if (fieldsOrder.length!=schemaBase.fieldsOrder.length) {return false;}
+//			for(int i=0; i<fieldsOrder.length; i++) {
+//				if (!fieldsOrder[i].equals(schemaBase.fieldsOrder[i])) {return false;}
+//			}
+//		}
 		if (fields!=null&&schemaBase.fields!=null) {
 			if (fields.length!=schemaBase.fields.length) {return false;}
 			for(int i=0; i<fields.length; i++) {

@@ -1,8 +1,9 @@
-app_name: agent_1
+node_name: agent_1
 role: agent
 access_credentials: xxxxxxxxxxxx
 host: 127.0.0.1
 port: 8964
 command_timeout:10000
 lock_timeout:3000
+storage_cache_timeout:3000
 data_folder: ./data/

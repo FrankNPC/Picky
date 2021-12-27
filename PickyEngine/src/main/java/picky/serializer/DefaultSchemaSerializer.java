@@ -2,7 +2,9 @@ package picky.serializer;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,16 +26,12 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 		for(Schema schema : schemas){
 			buffer.append(schema.getName());
 			buffer.append("{\n");
-			for(int i=0,j=0,k=0; k<schema.getFieldsOrder().length; k++) {
-				if (i<schema.getFields().length
-						&&schema.getFieldsOrder()[k].equals(schema.getFields()[i].getName())) {
-					buffer.append(SerializeHelper.serializeField(schema.getFields()[i], "  "));
-					i++;
-				}else if (j<schema.getSchemaBases().length
-						&&schema.getFieldsOrder()[k].equals(schema.getSchemaBases()[j].getName())) {
-					buffer.append(SerializeHelper.serializeSchemaBase(schema.getSchemaBases()[j], "  "));
-					j++;
-				}
+			for(Field field : schema.getFields()) {
+				buffer.append(serializeField(field, "  "));
+				buffer.append(",\n");
+			}
+			for(SchemaBase schemaBase : schema.getSchemaBases()) {
+				buffer.append(serializeSchemaBase(schemaBase, "  "));
 				buffer.append(",\n");
 			}
 			for(int i=0; i<schema.getKeys().length; i++) {
@@ -85,7 +83,6 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 		Map<String, SchemaBase> schemaBaseMap = new LinkedHashMap<>();
 		Map<String, Field> fieldMap = new LinkedHashMap<>();
 		Map<String, Key<?>> keyMap = new LinkedHashMap<>();
-		List<String> fieldsOrder = new ArrayList<>();
 
 		int offset = start;
 		Label_SchameBase_Breaker:
@@ -100,8 +97,6 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 					throw new IOException(String.format("fields should be defined before all keys at [%d,%d]", start, offset+1));
 				}
 				
-				fieldsOrder.add(fieldName);
-
 				start=offset+=1;
 				Label_Space_Breaker:
 				while(offset<schemaText.length()) {
@@ -143,7 +138,7 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 						}
 					}
 					start = offset;
-					continue;
+					break;
 				}
 
 				String lockStr = null, typeStr = null;
@@ -167,17 +162,12 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 					offset++;
 				}
 
-				lockStr = lockStr==null?"":(lockStr.substring(0,1).toUpperCase()+lockStr.substring(1));
-				LockType lock = null;
-				try {
-					lock = lockStr.isEmpty()?null:LockType.valueOf(lockStr);
-				}catch(Exception e){
+				LockType lock = LockType.forName(lockStr);
+				if (lockStr!=null&&lock==null) {
+					throw new IOException(String.format("invalid lock [%s] at [%d,%d]", lockStr, start, offset+1));
 				}
-				FieldType type = null;
-				try {
-					String uTypeStr = typeStr==null?"":(typeStr.substring(0,1).toUpperCase()+typeStr.substring(1));
-					type = uTypeStr.isEmpty()?null:FieldType.valueOf(uTypeStr);
-				}catch(Exception e){
+				FieldType type = FieldType.forName(typeStr);
+				if (typeStr!=null&&type==null) {
 					throw new IOException(String.format("invalid type [%s] at [%d,%d]", typeStr, start, offset+1));
 				}
 
@@ -200,10 +190,8 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 				}
 				
 				String keyTypeStr = schemaText.subSequence(start, offset).toString().trim();
-				KeyType keyType = null;
-				try {
-					keyType = keyTypeStr.isEmpty()?null:KeyType.valueOf(keyTypeStr);
-				}catch(Exception e){
+				KeyType keyType = KeyType.forName(keyTypeStr);
+				if (keyTypeStr!=null&&keyType==null) {
 					throw new IOException(String.format("invalid key type [%s] at [%d,%d]", keyTypeStr, start, offset+1));
 				}
 
@@ -255,7 +243,7 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 				}
 				
 				for(int i=0; i<PreFixes.length; i++) {
-					if (minValueStr.startsWith(PreFixes[i])!=maxValueStr.endsWith(EndFixes[i])) {
+					if (minValueStr.startsWith(PreFixes[i])!=maxValueStr.endsWith(PreFixes[i])) {
 						throw new IOException(String.format("invalid min/max value format %s %s at [%d,%d]", minValueStr, maxValueStr, start, offset+1));
 					}
 				}
@@ -284,23 +272,27 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 			offset++;
 		}
 		
-		if (!fieldsOrder.isEmpty()) {
-			schemaBase.setFieldsOrder(fieldsOrder.toArray(new String[fieldsOrder.size()]));
-		}
-		if (!keyMap.isEmpty()) {
-			((Schema) schemaBase).setKeys(keyMap.values().toArray(new Key<?>[keyMap.size()]));
-		}
 		if (!fieldMap.isEmpty()) {
 			schemaBase.setFields(fieldMap.values().toArray(new Field[fieldMap.size()]));
+			
+			Arrays.sort(schemaBase.getFields(), new Comparator<Field>(){
+				@Override
+				public int compare(Field f1, Field f2) {
+					if (f1.getFieldType()==f2.getFieldType()) {return 0;}
+					return f1.getFieldType().order-f2.getFieldType().order;
+				}
+			});
 		}
 		if (!schemaBaseMap.isEmpty()) {
 			schemaBase.setSchemaBases(schemaBaseMap.values().toArray(new SchemaBase[schemaBaseMap.size()]));
+		}
+		if (!keyMap.isEmpty()) {
+			((Schema) schemaBase).setKeys(keyMap.values().toArray(new Key<?>[keyMap.size()]));
 		}
 		return offset;
 	}
 	
 	private static String[] PreFixes = {"D", "L", "F", "B"};
-	private static String[] EndFixes = {"D", "L", "F", "B"};
 	
 	private Key<?> deserializeKeyWithType(Field[] fields, KeyType type, String keyName, String minValueStr, String maxValueStr){
 		FieldType fieldType = fields.length==1?fields[0].getFieldType():FieldType.String;
@@ -313,7 +305,7 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 		case Boolean:
 			Key<Boolean> boolKey = new Key<>();
 			boolKey.setKeyType(type);
-			boolKey.setName(keyName);
+			boolKey.setKeyName(keyName);
 			boolKey.setFields(fields);
 			boolKey.setMinValue(Boolean.parseBoolean(minValueStr));
 			boolKey.setMaxValue(Boolean.parseBoolean(maxValueStr));
@@ -321,7 +313,7 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 		case Byte:
 			Key<Byte> bKey = new Key<>();
 			bKey.setKeyType(type);
-			bKey.setName(keyName);
+			bKey.setKeyName(keyName);
 			bKey.setFields(fields);
 			bKey.setMinValue(Byte.parseByte(minValueStr));
 			bKey.setMaxValue(Byte.parseByte(maxValueStr));
@@ -329,7 +321,7 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 		case Int:
 			Key<Integer> intKey = new Key<>();
 			intKey.setKeyType(type);
-			intKey.setName(keyName);
+			intKey.setKeyName(keyName);
 			intKey.setFields(fields);
 			intKey.setMinValue(Integer.parseInt(minValueStr));
 			intKey.setMaxValue(Integer.parseInt(maxValueStr));
@@ -337,7 +329,7 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 		case Long:
 			Key<Long> longKey = new Key<>();
 			longKey.setKeyType(type);
-			longKey.setName(keyName);
+			longKey.setKeyName(keyName);
 			longKey.setFields(fields);
 			longKey.setMinValue(Long.parseLong(minValueStr));
 			longKey.setMaxValue(Long.parseLong(maxValueStr));
@@ -345,7 +337,7 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 		case Float:
 			Key<Float> floatKey = new Key<>();
 			floatKey.setKeyType(type);
-			floatKey.setName(keyName);
+			floatKey.setKeyName(keyName);
 			floatKey.setFields(fields);
 			floatKey.setMinValue(Float.parseFloat(minValueStr));
 			floatKey.setMaxValue(Float.parseFloat(maxValueStr));
@@ -353,7 +345,7 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 		case Double:
 			Key<Double> doubleKey = new Key<>();
 			doubleKey.setKeyType(type);
-			doubleKey.setName(keyName);
+			doubleKey.setKeyName(keyName);
 			doubleKey.setFields(fields);
 			doubleKey.setMinValue(Double.parseDouble(minValueStr));
 			doubleKey.setMaxValue(Double.parseDouble(maxValueStr));
@@ -361,7 +353,7 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 		case Bytes:
 			Key<byte[]> bytesKey = new Key<>();
 			bytesKey.setKeyType(type);
-			bytesKey.setName(keyName);
+			bytesKey.setKeyName(keyName);
 			bytesKey.setFields(fields);
 			bytesKey.setMinValue(Base64.getDecoder().decode(minValueStr));
 			bytesKey.setMaxValue(Base64.getDecoder().decode(maxValueStr));
@@ -369,13 +361,51 @@ public final class DefaultSchemaSerializer implements SchemaSerializer{
 		case String:
 			Key<String> strKey = new Key<>();
 			strKey.setKeyType(type);
-			strKey.setName(keyName);
+			strKey.setKeyName(keyName);
 			strKey.setFields(fields);
 			strKey.setMinValue(minValueStr);
 			strKey.setMaxValue(minValueStr);
 			return strKey;
 		}
 		return null;
+	}
+	
+	
+
+	private static final String serializeSchemaBase(SchemaBase schemaBase, String prefix) {
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(prefix);
+		buffer.append(schemaBase.getName());
+		buffer.append("{\n");
+		for(Field field : schemaBase.getFields()) {
+			buffer.append(serializeField(field, "  "+prefix));
+			buffer.append(",\n");
+		}
+		for(SchemaBase subSchemaBase : schemaBase.getSchemaBases()) {
+			buffer.append(serializeSchemaBase(subSchemaBase, "  "+prefix));
+			buffer.append(",\n");
+		}
+		SerializeHelper.removeEndComma(buffer);
+		buffer.append(prefix);
+		buffer.append('}');
+		return buffer.toString();
+	}
+	private static final String serializeField(Field field, String prefix) {
+		StringBuilder buffer = new StringBuilder();
+		buffer.append(prefix);
+		buffer.append(field.getName());
+		buffer.append(": ");
+		if (field.getLockType()!=null) {
+			buffer.append(field.getLockType().toString());
+			buffer.append('(');
+		}
+		if (field.getFieldType()!=null) {
+			buffer.append(field.getFieldType().toString().toLowerCase());
+		}
+		if (field.getLockType()!=null) {
+			buffer.append(')');
+		}
+		return buffer.toString();
 	}
 	
 }

@@ -23,7 +23,9 @@ public final class SchemaManager {
 	private static SchemaSerializer schemaSerializer;
 	
 	private static volatile SchemasKeysLocks schemasKeysLocks;
-	
+
+	private static Configuration configuration;
+
 	public static SchemaManager getInstance() {
 		if (schemaManager == null) {
 			synchronized (SchemaManager.class) {
@@ -32,7 +34,7 @@ public final class SchemaManager {
 					schemasKeysLocks = new SchemasKeysLocks();
 					try {
 						schemaSerializer = (DefaultSchemaSerializer) PickyClassManager.getInstance().getSchemaSerializer()
-								.newInstance();
+								.getDeclaredConstructor().newInstance();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -40,6 +42,13 @@ public final class SchemaManager {
 			}
 		}
 		return schemaManager;
+	}
+	public static SchemaManager getInstance(Configuration c) {
+		configuration = c;
+		if (configuration==null) {
+			configuration = Configuration.getConfiguration();
+		}
+		return getInstance();
 	}
 	
 	public List<Schema> parseSchemas(String context) throws Exception {
@@ -60,7 +69,7 @@ public final class SchemaManager {
 			for(Schema schema : schemaList) {
 				schemasCopy.put(schema.getName(), schema);
 				for(Key<?> key : schema.getKeys()) {
-					keysCopy.put(schema.getName()+"."+key.getName(), key);
+					keysCopy.put(schema.getName()+"."+key.getKeyName(), key);
 				}
 				for(Field field : schema.getFields()) {
 					if (field.getLockType()==null) {continue;}
@@ -126,7 +135,7 @@ public final class SchemaManager {
 	}
 	
 	public void syncSchemaToFile(String schemaName) throws Exception {
-		String filePath = Configuration.getConfiguration().getDataFolder()+File.separator+"schema"+File.separator+schemaName;
+		String filePath = configuration.getDataFolder()+File.separator+"schema"+File.separator+schemaName;
 		FileWriter fileWriter = new FileWriter(filePath);
 		try {
 			fileWriter.write(

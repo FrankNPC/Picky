@@ -1,10 +1,23 @@
 package picky.command;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 public enum Instructor {
-	Put("put"), Replace("replace"), Take("take"), Get("get"), Kick("kick"), Execute("execute"), Forward("forward"),
+	Put, 
+	Replace, 
+	Take, 
+	Get, 
+	Drop, 
+	Execute, 
+	Forward,
 	;
 	
-	private String instructor;
-	Instructor(String instructor) {this.instructor=instructor;}
-	public String toString() {return instructor;}
+	public String toString() {return this.toString().toLowerCase();}
+	private static final Map<String, Instructor> enumMap = 
+			Arrays.stream(Instructor.values()).collect(Collectors.toMap(i->i.toString().toUpperCase(), i->i));
+	public static Instructor forName(String value) {
+		return enumMap.get(value==null?null:value.toUpperCase());
+	}
 }

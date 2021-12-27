@@ -9,7 +9,7 @@ import java.util.List;
 
 import picky.command.Command;
 import picky.command.Instructor;
-import picky.command.Kind;
+import picky.command.Module;
 
 public final class DefaultCommandSerializer implements CommandSerializer {
 
@@ -50,7 +50,7 @@ public final class DefaultCommandSerializer implements CommandSerializer {
 	private static void writeToBuffer(Command command, OutputStream buffer) throws IOException {
 		buffer.write(command.getInstructor().toString().getBytes());
 		buffer.write(' ');
-		buffer.write(command.getKind().toString().getBytes());
+		buffer.write(command.getModule().toString().getBytes());
 		buffer.write(' ');
 		buffer.write(command.getSourceNodeName().getBytes());
 		buffer.write(' ');
@@ -85,11 +85,11 @@ public final class DefaultCommandSerializer implements CommandSerializer {
 			Command command = new Command();
 
 			while (index < bytes.length && bytes[index] != ' ') {}
-			command.setInstructor(Instructor.valueOf(new String(bytes, last, index)));
+			command.setInstructor(Instructor.forName(new String(bytes, last, index)));
 			last = index += 1;
 
 			while (index < bytes.length && bytes[index] != ' ') {}
-			command.setKind(Kind.valueOf(new String(bytes, last, index)));
+			command.setModule(Module.forName(new String(bytes, last, index)));
 			last = index += 1;
 
 			while (index < bytes.length && bytes[index] != ' ') {}

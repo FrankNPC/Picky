@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import picky.common.CompareUtil;
+import picky.common.CompareUtils;
 import picky.schema.Field;
 import picky.schema.FieldType;
 import picky.schema.Key;
@@ -32,15 +32,15 @@ public class ShardingManager {
 		return shardingManager;
 	}
 
-	private volatile Map<String, List<Sharding<?>>> shardingsMap = new HashMap<>();
+	private volatile Map<String, List<Sharding>> shardingsMap = new HashMap<>();
 	
-	public Sharding<?> getShardingByKeyValue(String schemaName, String keyName, Object obj) throws Exception {
-		List<Sharding<?>> shardingList =  shardingsMap.get(schemaName);
+	public Sharding getShardingByKeyValue(String schemaName, String keyName, Object obj) throws Exception {
+		List<Sharding> shardingList =  shardingsMap.get(schemaName);
 		Key<?> key = SchemaManager.getInstance().getKeyByName(schemaName, keyName);
 		return indexedBinarySearch(shardingList, key, obj);
 	}
 
-	private Sharding<?> indexedBinarySearch(List<Sharding<?>> shardingList, Key<?> key, Object obj) throws Exception {
+	private Sharding indexedBinarySearch(List<Sharding> shardingList, Key<?> key, Object obj) throws Exception {
 		if (shardingList==null||shardingList.isEmpty()||obj==null) {return null;}
 		int low = 0;
 		int high = shardingList.size()-1;
@@ -142,7 +142,7 @@ public class ShardingManager {
 			while (low <= high) {
 				int mid = (low + high) >>> 1;
 				key = shardingList.get(mid).getKeyBlock().getKey();
-				int cmp = CompareUtil.indexOf(fieldType, bsMin, bsMax, bytes);
+				int cmp = CompareUtils.compareBytesRange(bytes, bsMin, bsMax);
 				if (cmp < 0) {
 					low = mid + 1;
 				}else if (cmp > 0) {
@@ -156,7 +156,7 @@ public class ShardingManager {
 			while (low <= high) {
 				int mid = (low + high) >>> 1;
 				key = shardingList.get(mid).getKeyBlock().getKey();
-				int cmp = CompareUtil.indexOf(fieldType, strMin, strMax, str);
+				int cmp = CompareUtils.compareStringRange(str, strMin, strMax);
 				if (cmp < 0) {
 					low = mid + 1;
 				}else if (cmp > 0) {
@@ -174,8 +174,8 @@ public class ShardingManager {
 	
 	private Lock lock = new ReentrantLock(false);
 
-	public boolean addSharding(Sharding<?> sharding) {
-		List<Sharding<?>> shardingList = shardingsMap.get(sharding.getSchemaName());
+	public boolean putSharding(Sharding sharding) {
+		List<Sharding> shardingList = shardingsMap.get(sharding.getSchemaName());
 		if (shardingList==null||!shardingList.contains(sharding)) {
 			lock.lock();
 			try {
@@ -197,12 +197,12 @@ public class ShardingManager {
 		}
 		return false;
 	}
-	public List<Sharding<?>> addSharding(List<Sharding<?>> shardings) {
+	public List<Sharding> putSharding(List<Sharding> shardings) {
 		lock.lock();
 		try {
 			for(int i=0; i<shardings.size(); i++) {
-				Sharding<?> sharding = shardings.get(i);
-				List<Sharding<?>> shardingList = shardingsMap.get(sharding.getSchemaName());
+				Sharding sharding = shardings.get(i);
+				List<Sharding> shardingList = shardingsMap.get(sharding.getSchemaName());
 				
 				if (shardingList==null) {
 					shardingList = new ArrayList<>();
@@ -220,8 +220,8 @@ public class ShardingManager {
 		}
 		return shardings;
 	}
-	public boolean removeSharding(Sharding<?> sharding) {
-		List<Sharding<?>> shardingList = shardingsMap.get(sharding.getSchemaName());
+	public boolean removeSharding(Sharding sharding) {
+		List<Sharding> shardingList = shardingsMap.get(sharding.getSchemaName());
 		if (shardingList==null||!shardingList.contains(sharding)) {
 			lock.lock();
 			try {

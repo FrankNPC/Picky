@@ -1,5 +1,9 @@
 package picky.node;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
  * Role decides the behavior.
  * 
@@ -10,7 +14,7 @@ public enum Role {
 	/**
 	 * in charge of the keys, partition, sharding, command delivery, execution and forward, and so on.
 	 */
-	Agent("agent"), 
+	Agent, 
 //	/**
 //	 * the slaver of a Agent
 //	 */
@@ -18,7 +22,7 @@ public enum Role {
 	/**
 	 * only for storage
 	 */
-	Storage("storage"), 
+	Storage, 
 //	/**
 //	 * the slaver of a Storage
 //	 */
@@ -26,13 +30,19 @@ public enum Role {
 	/**
 	 * send out the commands. never involved in any Agent and Storage things, but may cache the schemas to locate the keys quickly.
 	 */
-	Ternimal("ternimal"), 
+	Ternimal, 
 //	Client("client"), 
 	;
 	
-	private String role;
-	private Role(String role) {
-		this.role=role;
+//	private String value;
+//	private Role(String role) {
+//		this.value=role;
+//	}
+//	public String toString() {return value;}
+
+	private static final Map<String, Role> enumMap = 
+			Arrays.stream(Role.values()).collect(Collectors.toMap(i->i.toString().toLowerCase(), i->i));
+	public static Role forName(String value) {
+		return enumMap.get(value==null?null:value.toLowerCase());
 	}
-	public String toString() {return role;}
 }

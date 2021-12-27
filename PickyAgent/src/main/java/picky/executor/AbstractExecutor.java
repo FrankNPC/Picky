@@ -10,19 +10,19 @@ public abstract class AbstractExecutor implements Executor, Insctructor {
 	@Override
 	public Command run(Command command) {
 		switch(command.getInstructor()) {
-		case Put :
+		case put :
 			return put(command);
-		case Replace :
+		case replace :
 			return replace(command);
-		case Take :
+		case take :
 			return take(command);
-		case Get :
+		case get :
 			return get(command);
-		case Kick :
+		case kick :
 			return kick(command);
-		case Execute :
+		case execute :
 			return execute(command);
-		case Forward :
+		case forward :
 			return forward(command);
 		}
 		return CommandBuilder.buildEmptyCommand();

@@ -6,8 +6,8 @@ import picky.node.Sharding;
 
 public interface ShardingSerializer {
 	
-	public CharSequence serialize(Sharding<?>... shardings) throws IOException;
+	public CharSequence serialize(Sharding... shardings) throws IOException;
 	
-	public Sharding<?>[] deserialize(CharSequence shardingText) throws IOException;
+	public Sharding[] deserialize(CharSequence shardingText) throws IOException;
 
 }

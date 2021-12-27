@@ -4,10 +4,12 @@ public interface Atomic<T> {
 
 	public T get();
 
-	public void set(T value);
+	public void set(T newValue);
 
-	public T getAndSet(T value);
+	public void set(AdderUnaryOperator<T> adderUnaryOperator);
 
-	public boolean compareAndSet(T value, T newValue);
+	public T getAndSet(T newValue);
+
+	public boolean compareAndSet(T expect, T update);
 	
 }

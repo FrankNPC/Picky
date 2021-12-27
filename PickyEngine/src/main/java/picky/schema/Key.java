@@ -6,7 +6,7 @@ package picky.schema;
  */
 public class Key<T> {
 
-	private String name;
+	private String keyName;
 	
 	private KeyType keyType;
 
@@ -19,23 +19,23 @@ public class Key<T> {
 	public Key() {}
 	
 	public Key(Key<T> k) {
-		this(k.name, k.keyType, k.minValue, k.maxValue, k.fields);
+		this(k.keyName, k.keyType, k.minValue, k.maxValue, k.fields);
 	}
 	
 	public Key(String n, KeyType k, T i, T a, Field[] f) {
-		this.name = n;
+		this.keyName = n;
 		this.keyType = k;
 		this.minValue = i;
 		this.maxValue = a;
 		this.fields = f;
 	}
 	
-	public String getName() {
-		return name;
+	public String getKeyName() {
+		return keyName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setKeyName(String name) {
+		this.keyName = name;
 	}
 
 	public KeyType getKeyType() {
@@ -72,8 +72,8 @@ public class Key<T> {
 
 	@Override
 	public int hashCode() {
-		int hash = 0;
-		if (name!=null) {hash^=name.hashCode();}
+		int hash = 31;
+		if (keyName!=null) {hash^=keyName.hashCode();}
 		if (keyType!=null) {hash^=keyType.hashCode();}
 		if (minValue!=null) {hash^=minValue.hashCode();}
 		if (maxValue!=null) {hash^=maxValue.hashCode();}
@@ -88,13 +88,13 @@ public class Key<T> {
 		if (!(obj instanceof Key)||hashCode()!=obj.hashCode()) {return false;}
 		Key<?> key = (Key<?>) obj;
 		
-		if (name==null^key.name==null) {return false;}
+		if (keyName==null^key.keyName==null) {return false;}
 		if (keyType==null^key.keyType==null) {return false;}
 		if (minValue==null^key.minValue==null) {return false;}
 		if (maxValue==null^key.maxValue==null) {return false;}
 		if (fields==null^key.fields==null) {return false;}
 		
-		if (name!=null&&key.name!=null&&!name.equals(key.name)) {return false;}
+		if (keyName!=null&&key.keyName!=null&&!keyName.equals(key.keyName)) {return false;}
 		if (keyType!=null&&key.keyType!=null&&!keyType.equals(key.keyType)) {return false;}
 		if (minValue!=null&&key.minValue!=null&&!minValue.equals(key.minValue)) {return false;}
 		if (maxValue!=null&&key.maxValue!=null&&!maxValue.equals(key.maxValue)) {return false;}

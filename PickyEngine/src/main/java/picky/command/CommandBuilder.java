@@ -16,7 +16,7 @@ public final class CommandBuilder {
 	public static Command buildOKCommand() {
 		Command command = new Command();
 		command.setInstructor(Instructor.Forward);
-		command.setKind(Kind.Message);
+		command.setModule(Module.Message);
 		command.setParameters("OK".getBytes());
 		command.setTime(System.currentTimeMillis());
 		return command;

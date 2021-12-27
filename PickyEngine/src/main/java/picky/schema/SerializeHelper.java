@@ -3,45 +3,7 @@ package picky.schema;
 import java.util.Base64;
 
 public final class SerializeHelper {
-	
-	public static final String serializeSchemaBase(SchemaBase schemaBase, String prefix) {
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(prefix);
-		buffer.append(schemaBase.getName());
-		buffer.append("{\n");
-		for(int i=0,j=0,k=0; k<schemaBase.getFieldsOrder().length; k++) {
-			if (schemaBase.getFieldsOrder()[k].equals(schemaBase.getFields()[i].getName())) {
-				buffer.append(serializeField(schemaBase.getFields()[i], "  "+prefix));
-				i++;
-			}else if (schemaBase.getFieldsOrder()[k].equals(schemaBase.getSchemaBases()[j].getName())) {
-				buffer.append(serializeSchemaBase(schemaBase.getSchemaBases()[j], "  "+prefix));
-				j++;
-			}
-			buffer.append(",\n");
-		}
-		removeEndComma(buffer);
-		buffer.append(prefix);
-		buffer.append('}');
-		return buffer.toString();
-	}
-	public static final String serializeField(Field field, String prefix) {
-		StringBuilder buffer = new StringBuilder();
-		buffer.append(prefix);
-		buffer.append(field.getName());
-		buffer.append(": ");
-		if (field.getLockType()!=null) {
-			buffer.append(field.getLockType().toString());
-			buffer.append('(');
-		}
-		if (field.getFieldType()!=null) {
-			buffer.append(field.getFieldType().toString().toLowerCase());
-		}
-		if (field.getLockType()!=null) {
-			buffer.append(')');
-		}
-		return buffer.toString();
-	}
-	
+
 	public static final void removeEndComma(StringBuilder buffer) {
 		for(int i=buffer.length()-1; i>0; i--) {
 			if (Character.isWhitespace(buffer.charAt(i))) {continue;}
@@ -58,7 +20,7 @@ public final class SerializeHelper {
 		buffer.append(key.getKeyType().toString());
 		buffer.append('(');
 		buffer.append('\'');
-		buffer.append(key.getName());
+		buffer.append(key.getKeyName());
 		buffer.append('\'');
 		buffer.append(',');
 

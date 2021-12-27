@@ -2,10 +2,10 @@ package picky.key;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import picky.common.CompareUtil;
 import picky.schema.Field;
 import picky.schema.FieldType;
 import picky.schema.Key;
@@ -30,12 +30,14 @@ public class KeyBlock<T> {
 	private long occupiedSize;
 	
 	private Comparator<Object> comparator;
+	
+	private int averageSize;
 
 	public KeyBlock(String dataRootFolder, Schema schema, Key<T> k) {
 		this.schema = schema;
 		this.key = k;
 		
-		File rootFile = new File(dataRootFolder+File.separator+schema.getName()+File.separator+schema.getName());
+		File rootFile = new File(dataRootFolder+File.separator+schema.getName());
 		rootFile.mkdirs();
 		File[] files = rootFile.listFiles();
 		for(int i=0; i<files.length; i++) {
@@ -58,10 +60,7 @@ public class KeyBlock<T> {
 		case String:
 			comparator = (x,y)->{return x.toString().compareTo(y.toString());};break;
 		case Bytes:
-			comparator = (x,y)->{
-				byte[] b1 = (byte[]) x; byte[] b2 = (byte[]) y;
-				return CompareUtil.compareTo(b1, 0, b1.length, b2, 0, b2.length);};
-				break;
+			comparator = (x,y)->{return Arrays.compare((byte[])x, (byte[])y);};break;
 		case Byte:
 			comparator = (x,y)->{return Byte.compare((Byte)x, (Byte)y);};break;
 		case Float:
@@ -70,7 +69,7 @@ public class KeyBlock<T> {
 			comparator = (x,y)->{return Double.compare((Double)x, (Double)y);};break;
 		case Boolean:
 			comparator = (x,y)->{return Boolean.compare((Boolean)x, (Boolean)y);};break;
-			default:break;
+		default:break;
 		}
 	}
 
@@ -84,14 +83,26 @@ public class KeyBlock<T> {
 	
 	public boolean addKeyIfAbsent(Object value) {
 		if (value==null) {return false;}
+		int index = binarySearch(value);
+		if (index>-1) {
+			
+		}
 		return false;
 	}
 	public boolean addKey(Object value) {
 		if (value==null) {return false;}
+		int index = binarySearch(value);
+		if (index>-1) {
+			
+		}
 		return false;
 	}
 	public boolean removeKey(Object value) {
 		if (value==null) {return false;}
+		int index = binarySearch(value);
+		if (index>-1) {
+			
+		}
 		return false;
 	}
 	public int indexOf(Object value) {
@@ -121,24 +132,20 @@ public class KeyBlock<T> {
 		return lastAccessTime;
 	}
 
-	public void setLastAccessTime(long lastAccessTime) {
-		this.lastAccessTime = lastAccessTime;
-	}
-
 	public long getLastModifiedTime() {
 		return lastModifiedTime;
-	}
-
-	public void setLastModifiedTime(long lastModifiedTime) {
-		this.lastModifiedTime = lastModifiedTime;
 	}
 
 	public long getOccupiedSize() {
 		return occupiedSize;
 	}
 
-	public void setOccupiedSize(long occupiedSize) {
-		this.occupiedSize = occupiedSize;
+	public int getAverageSize() {
+		return averageSize;
+	}
+
+	public void setAverageSize(int averageSize) {
+		this.averageSize = averageSize;
 	}
 
 }

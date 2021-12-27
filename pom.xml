@@ -25,7 +25,6 @@
 	
 	<modules>
 		<module>PickyEngine</module>
-		<module>PickyAgent</module>
 	</modules>
 	
 	<dependencies>

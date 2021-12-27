@@ -19,7 +19,7 @@ package picky.command;
 public class Command {
 	
 	private Instructor instructor;
-	private Kind kind;
+	private Module module;
 	private String sourceNodeName;
 	private String relayNodeName;
 	private String targetNodeName;
@@ -33,11 +33,11 @@ public class Command {
 	public void setInstructor(Instructor instructor) {
 		this.instructor = instructor;
 	}
-	public Kind getKind() {
-		return kind;
+	public Module getModule() {
+		return module;
 	}
-	public void setKind(Kind kind) {
-		this.kind = kind;
+	public void setModule(Module kind) {
+		this.module = kind;
 	}
 	public String getSourceNodeName() {
 		return sourceNodeName;

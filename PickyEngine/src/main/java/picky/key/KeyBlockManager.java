@@ -21,6 +21,10 @@ public class KeyBlockManager {
 	private static volatile KeyBlockSerializer primaryKeyBlockSerializer;
 	
 	private static volatile KeyBlockSerializer uniqueKeyBlockSerializer;
+
+	public static KeyBlockManager getInstance(Schema schema) {
+		return keyBlockManagers.get(schema);
+	}
 	
 	public static KeyBlockManager getInstance(String dataRootFolder, Schema schema) {
 		if (!keyBlockManagers.containsKey(schema)) {
@@ -37,7 +41,7 @@ public class KeyBlockManager {
 				if (primaryKeyBlockSerializer==null) {
 					try {
 						primaryKeyBlockSerializer = (KeyBlockSerializer) PickyClassManager.getInstance().getPrimaryKeyBlockSerializer()
-								.newInstance();
+								.getDeclaredConstructor().newInstance();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -49,7 +53,7 @@ public class KeyBlockManager {
 				if (uniqueKeyBlockSerializer==null) {
 					try {
 						uniqueKeyBlockSerializer = (KeyBlockSerializer) PickyClassManager.getInstance().getUniqueKeyBlockSerializer()
-								.newInstance();
+								.getDeclaredConstructor().newInstance();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -67,84 +71,91 @@ public class KeyBlockManager {
 	}
 	
 	private Lock lock = new ReentrantLock(false);
-	private volatile Map<Key<?>, KeyBlock<?>> primaryKeyBlocks = new HashMap<>();
-	private volatile Map<Key<?>, UniqueKeyBlock<?, ?>> uniqueKeyBlocks = new HashMap<>();
+	private volatile Map<String, KeyBlock<?>> primaryKeyBlocks = new HashMap<>();
+	private volatile Map<String, UniqueKeyBlock<?, ?>> uniqueKeyBlocks = new HashMap<>();
 
-	public void addKeyForKeyBlock(Key<?> pKey, Key<?>... uKeys) {
+	public KeyBlock<?> getKeyBlock(String keyName) {
+		return primaryKeyBlocks.get(keyName);
+	}
+	public UniqueKeyBlock<?, ?> getUniqueKeyBlock(String keyName) {
+		return uniqueKeyBlocks.get(keyName);
+	}
+	
+	public void putKeyAndKeyBlock(Key<?> pKey, Key<?>... uKeys) {
 		lock.lock();
 		try {
-			Map<Key<?>, KeyBlock<?>> primaryKeyBlocksCopy = new HashMap<>(primaryKeyBlocks);
-			primaryKeyBlocksCopy.put(pKey, new KeyBlock<>(dataRootFolder, schema, pKey));
+			Map<String, KeyBlock<?>> primaryKeyBlocksCopy = new HashMap<>(primaryKeyBlocks);
+			primaryKeyBlocksCopy.put(pKey.getKeyName(), new KeyBlock<>(dataRootFolder, schema, pKey));
 			primaryKeyBlocks=primaryKeyBlocksCopy;
 
-			Map<Key<?>, UniqueKeyBlock<?, ?>> uniqueKeyBlocksCopy = new HashMap<>(uniqueKeyBlocks);
+			Map<String, UniqueKeyBlock<?, ?>> uniqueKeyBlocksCopy = new HashMap<>(uniqueKeyBlocks);
 			for(Key<?> k : uKeys) {
-				uniqueKeyBlocksCopy.put(k, new UniqueKeyBlock<>(dataRootFolder, schema, pKey, k));
+				uniqueKeyBlocksCopy.put(k.getKeyName(), new UniqueKeyBlock<>(dataRootFolder, schema, pKey, k));
 			}
 			uniqueKeyBlocks=uniqueKeyBlocksCopy;
 		}finally {
 			lock.unlock();
 		}
 	}
-	public void removeKeyForKeyBlock(Key<?> pKey, Key<?>... uKeys) {
+	public void removeKeyAndKeyBlock(Key<?> pKey, Key<?>... uKeys) {
 		lock.lock();
 		try {
-			Map<Key<?>, KeyBlock<?>> primaryKeyBlocksCopy = new HashMap<>(primaryKeyBlocks);
-			primaryKeyBlocksCopy.remove(pKey);
+			Map<String, KeyBlock<?>> primaryKeyBlocksCopy = new HashMap<>(primaryKeyBlocks);
+			primaryKeyBlocksCopy.remove(pKey.getKeyName());
 			primaryKeyBlocks=primaryKeyBlocksCopy;
 
-			Map<Key<?>, UniqueKeyBlock<?, ?>> uniqueKeyBlocksCopy = new HashMap<>(uniqueKeyBlocks);
+			Map<String, UniqueKeyBlock<?, ?>> uniqueKeyBlocksCopy = new HashMap<>(uniqueKeyBlocks);
 			for(Key<?> k : uKeys) {
-				uniqueKeyBlocksCopy.remove(k);
+				uniqueKeyBlocksCopy.remove(k.getKeyName());
 			}
 			uniqueKeyBlocks=uniqueKeyBlocksCopy;
 		}finally {
 			lock.unlock();
 		}
 	}
-	public boolean addKeyIfAbsent(Key<?> pKey, Object pValue, Key<?>[] uKeys, Object[] uValues) {
-		KeyBlock<?> pKeyBlock = primaryKeyBlocks.get(pKey);
+	public boolean putKeyIfAbsent(Key<?> pKey, Object pValue, Key<?>[] uKeys, Object[] uValues) {
+		KeyBlock<?> pKeyBlock = primaryKeyBlocks.get(pKey.getKeyName());
 		if (!pKeyBlock.addKeyIfAbsent(pValue)) {return false;}
 		if (uKeys!=null) {
 			for(int i=0; i<uKeys.length; i++) {
 				if (uKeys[i]!=null||uValues[i]!=null) {continue;}
-				UniqueKeyBlock<?, ?> uKeyBlock = uniqueKeyBlocks.get(uKeys[i]);
+				UniqueKeyBlock<?, ?> uKeyBlock = uniqueKeyBlocks.get(uKeys[i].getKeyName());
 				uKeyBlock.addKeyIfAbsent(uValues[i]);
 			}
 		}
 		return false;
 	}
-	public boolean addKey(Key<?> pKey, Object pValue, Key<?>[] uKeys, Object[] uValues) {
-		KeyBlock<?> pKeyBlock = primaryKeyBlocks.get(pKey);
+	public boolean putKey(Key<?> pKey, Object pValue, Key<?>[] uKeys, Object[] uValues) {
+		KeyBlock<?> pKeyBlock = primaryKeyBlocks.get(pKey.getKeyName());
 		if (!pKeyBlock.addKey(pValue)) {return false;}
 		if (uKeys!=null) {
 			for(int i=0; i<uKeys.length; i++) {
 				if (uKeys[i]!=null||uValues[i]!=null) {continue;}
-				UniqueKeyBlock<?, ?> uKeyBlock = uniqueKeyBlocks.get(uKeys[i]);
+				UniqueKeyBlock<?, ?> uKeyBlock = uniqueKeyBlocks.get(uKeys[i].getKeyName());
 				uKeyBlock.addKey(uValues[i]);
 			}
 		}
 		return false;
 	}
 	public boolean removeKey(Key<?> pKey, Object pValue, Key<?>[] uKeys, Object[] uValues) {
-		KeyBlock<?> pKeyBlock = primaryKeyBlocks.get(pKey);
+		KeyBlock<?> pKeyBlock = primaryKeyBlocks.get(pKey.getKeyName());
 		if (pValue!=null&&!pKeyBlock.removeKey(pValue)) {return false;}
 		if (uKeys!=null) {
 			for(int i=0; i<uKeys.length; i++) {
 				if (uKeys[i]!=null||uValues[i]!=null) {continue;}
-				UniqueKeyBlock<?, ?> uKeyBlock = uniqueKeyBlocks.get(uKeys[i]);
+				UniqueKeyBlock<?, ?> uKeyBlock = uniqueKeyBlocks.get(uKeys[i].getKeyName());
 				uKeyBlock.removeKey(uValues[i]);
 			}
 		}
 		return true;
 	}
 	public boolean containKey(Key<?> pKey, Object pValue, Key<?>[] uKeys, Object[] uValues) {
-		KeyBlock<?> pKeyBlock = primaryKeyBlocks.get(pKey);
+		KeyBlock<?> pKeyBlock = primaryKeyBlocks.get(pKey.getKeyName());
 		if (pValue!=null&&pKeyBlock.indexOf(pValue)<0) {return false;}
 		if (uKeys!=null) {
 			for(int i=0; i<uKeys.length; i++) {
 				if (uKeys[i]!=null||uValues[i]!=null) {continue;}
-				UniqueKeyBlock<?, ?> uKeyBlock = uniqueKeyBlocks.get(uKeys[i]);
+				UniqueKeyBlock<?, ?> uKeyBlock = uniqueKeyBlocks.get(uKeys[i].getKeyName());
 				if (uKeyBlock.indexOf(uValues[i])>-1) {return true;}
 			}
 		}

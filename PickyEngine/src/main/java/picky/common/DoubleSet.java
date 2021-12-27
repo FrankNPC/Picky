@@ -76,10 +76,10 @@ public class DoubleSet<E extends Object> extends AbstractSet<E> {
 					ret = this;
 				}
 			}
-			if (ret!=this) {
+			if (ret==this) {
 				valueMap = valueMapCopy;
 			}
-			return ret!=this;
+			return ret==this;
 		}finally{
 			lock.unlock();
 		}
@@ -98,10 +98,10 @@ public class DoubleSet<E extends Object> extends AbstractSet<E> {
 					it.remove();
 				}
 			}
-			if (ret!=this) {
+			if (ret==this) {
 				valueMap = valueMapCopy;
 			}
-			return ret!=this;
+			return ret==this;
 		}finally{
 			lock.unlock();
 		}
@@ -120,10 +120,10 @@ public class DoubleSet<E extends Object> extends AbstractSet<E> {
 					it.remove();
 				}
 			}
-			if (ret!=this) {
+			if (ret==this) {
 				valueMap = valueMapCopy;
 			}
-			return ret!=this;
+			return ret==this;
 		}finally{
 			lock.unlock();
 		}
